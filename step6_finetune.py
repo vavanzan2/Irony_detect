@@ -17,7 +17,7 @@ BASE_MODEL = "FacebookAI/roberta-base"
 
 
 # ---------------------------------------------------------------------------
-# Dataset PyTorch
+# PyTorch Dataset
 # ---------------------------------------------------------------------------
 
 class IronyDataset(Dataset):
@@ -35,13 +35,13 @@ class IronyDataset(Dataset):
 
 
 # ---------------------------------------------------------------------------
-# Funções principais
+# Main functions
 # ---------------------------------------------------------------------------
 
 def load_splits(output_dir):
     train_df = pd.read_csv(os.path.join(output_dir, "train.csv"))
     val_df   = pd.read_csv(os.path.join(output_dir, "val.csv"))
-    print(f"[Etapa 6] Treino: {len(train_df)} | Validação: {len(val_df)}")
+    print(f"[Step 6] Train: {len(train_df)} | Validation: {len(val_df)}")
     return train_df, val_df
 
 
@@ -65,17 +65,17 @@ def compute_metrics(eval_pred):
 def finetune(train_df, val_df, output_dir, epochs=3, batch_size=16, lr=2e-5):
     model_save_path = os.path.join(output_dir, "roberta_finetuned")
 
-    print(f"[Etapa 6] Carregando tokenizer: {BASE_MODEL}")
+    print(f"[Step 6] Loading tokenizer: {BASE_MODEL}")
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
 
-    print("[Etapa 6] Tokenizando dados...")
+    print("[Step 6] Tokenizing data...")
     train_enc = tokenize(tokenizer, train_df["text"].fillna(""))
     val_enc   = tokenize(tokenizer, val_df["text"].fillna(""))
 
     train_dataset = IronyDataset(train_enc, train_df["label"].tolist())
     val_dataset   = IronyDataset(val_enc,   val_df["label"].tolist())
 
-    print(f"[Etapa 6] Carregando modelo base: {BASE_MODEL}")
+    print(f"[Step 6] Loading base model: {BASE_MODEL}")
     model = AutoModelForSequenceClassification.from_pretrained(
         BASE_MODEL,
         num_labels=2,
@@ -107,13 +107,13 @@ def finetune(train_df, val_df, output_dir, epochs=3, batch_size=16, lr=2e-5):
         compute_metrics=compute_metrics,
     )
 
-    print(f"[Etapa 6] Iniciando fine-tuning — {epochs} épocas, lr={lr}, batch={batch_size}")
+    print(f"[Step 6] Starting fine-tuning — {epochs} epochs, lr={lr}, batch={batch_size}")
     trainer.train()
 
-    print(f"[Etapa 6] Salvando modelo em: {model_save_path}")
+    print(f"[Step 6] Saving model to: {model_save_path}")
     trainer.save_model(model_save_path)
     tokenizer.save_pretrained(model_save_path)
-    print("[Etapa 6] Modelo salvo com sucesso.")
+    print("[Step 6] Model saved successfully.")
     return model_save_path
 
 
@@ -122,5 +122,5 @@ def run(train_df=None, val_df=None, output_dir="outputs", epochs=3, batch_size=1
         train_df, val_df = load_splits(output_dir)
 
     model_path = finetune(train_df, val_df, output_dir, epochs=epochs, batch_size=batch_size, lr=lr)
-    print("\n[Etapa 6] Concluída com sucesso.")
+    print("\n[Step 6] Completed successfully.")
     return model_path
