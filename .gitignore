@@ -1,2 +1,10 @@
 __pycache__
 outputs/roberta_finetuned/checkpoint-*/
+epic_raw.csv           
+epic_labeled.csv       
+train.csv              
+val.csv                
+test.csv               
+baseline_results.json  
+cardiff_results.json   
+finetuned_results.json 
