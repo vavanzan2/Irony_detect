@@ -18,24 +18,24 @@ def load_results(output_dir):
         if os.path.exists(path):
             with open(path, encoding="utf-8") as f:
                 results[name] = json.load(f)
-            print(f"  Carregado: {path}")
+            print(f"  Loaded: {path}")
         else:
-            print(f"  AVISO: não encontrado — {path}")
+            print(f"  WARNING: not found — {path}")
     return results
 
 
 def print_comparison_table(results):
     if not results:
-        print("Nenhum resultado disponível para comparar.")
+        print("No results available to compare.")
         return
 
     col_w = 28
     met_w = 12
-    header = f"{'Modelo':<{col_w}}" + "".join(f"{m.upper():>{met_w}}" for m in METRICS)
+    header = f"{'Model':<{col_w}}" + "".join(f"{m.upper():>{met_w}}" for m in METRICS)
     sep = "-" * len(header)
 
     print("\n" + "=" * len(header))
-    print("  TABELA COMPARATIVA — DETECÇÃO DE IRONIA (EPIC)")
+    print("  COMPARISON TABLE — IRONY DETECTION (EPIC)")
     print("=" * len(header))
     print(header)
     print(sep)
@@ -49,9 +49,9 @@ def print_comparison_table(results):
 
     print(sep)
 
-    # Melhor modelo por Macro-F1
+    # Best model by Macro-F1
     best_name = max(results, key=lambda n: results[n].get("macro_f1", 0))
-    print(f"\n  Melhor Macro-F1: {best_name} ({results[best_name].get('macro_f1', 0):.4f})")
+    print(f"\n  Best Macro-F1: {best_name} ({results[best_name].get('macro_f1', 0):.4f})")
 
 
 def print_confusion_matrices(results):
@@ -59,9 +59,9 @@ def print_confusion_matrices(results):
         return
 
     print("\n" + "=" * 60)
-    print("  MATRIZES DE CONFUSÃO")
-    print("  (linhas = real, colunas = previsto)")
-    print("  Ordem: [Irônico, Não Irônico]")
+    print("  CONFUSION MATRICES")
+    print("  (rows = actual, cols = predicted)")
+    print("  Order: [Ironic, Not Ironic]")
     print("=" * 60)
 
     for name, res in results.items():
@@ -69,9 +69,9 @@ def print_confusion_matrices(results):
         if not cm:
             continue
         print(f"\n  {name}")
-        print(f"  {'':20} Previsto: Irônico  Previsto: Não Irônico")
-        print(f"  {'Real: Irônico':20} {cm[0][0]:>16}  {cm[0][1]:>21}")
-        print(f"  {'Real: Não Irônico':20} {cm[1][0]:>16}  {cm[1][1]:>21}")
+        print(f"  {'':20} Predicted: Ironic  Predicted: Not Ironic")
+        print(f"  {'Actual: Ironic':20} {cm[0][0]:>16}  {cm[0][1]:>21}")
+        print(f"  {'Actual: Not Ironic':20} {cm[1][0]:>16}  {cm[1][1]:>21}")
 
 
 def analyze_errors(results):
@@ -79,17 +79,17 @@ def analyze_errors(results):
         return
 
     print("\n" + "=" * 60)
-    print("  ANÁLISE DE ERROS")
+    print("  ERROR ANALYSIS")
     print("=" * 60)
 
     for name, res in results.items():
         cm = res.get("confusion_matrix")
         if not cm:
             continue
-        tp = cm[0][0]  # irônico previsto como irônico
-        fn = cm[0][1]  # irônico previsto como não irônico  (falso negativo)
-        fp = cm[1][0]  # não irônico previsto como irônico  (falso positivo)
-        tn = cm[1][1]  # não irônico previsto como não irônico
+        tp = cm[0][0]  # ironic predicted as ironic
+        fn = cm[0][1]  # ironic predicted as not ironic  (false negative)
+        fp = cm[1][0]  # not ironic predicted as ironic  (false positive)
+        tn = cm[1][1]  # not ironic predicted as not ironic
 
         total = tp + fn + fp + tn
         fp_rate = fp / (fp + tn) if (fp + tn) > 0 else 0
@@ -97,17 +97,17 @@ def analyze_errors(results):
 
         print(f"\n  {name}")
         print(f"    TP={tp}, FN={fn}, FP={fp}, TN={tn}")
-        print(f"    Taxa de Falsos Positivos (vê ironia demais): {fp_rate:.2%}")
-        print(f"    Taxa de Falsos Negativos (perde ironia real): {fn_rate:.2%}")
+        print(f"    False Positive Rate (sees irony too often): {fp_rate:.2%}")
+        print(f"    False Negative Rate (misses real irony): {fn_rate:.2%}")
 
         if fp_rate > fn_rate:
-            print("    → Tendência: modelo 'agressivo' — prefere prever ironia quando incerto")
+            print("    → Tendency: 'aggressive' model — prefers to predict irony when unsure")
         else:
-            print("    → Tendência: modelo 'conservador' — prefere prever não ironia quando incerto")
+            print("    → Tendency: 'conservative' model — prefers to predict not irony when unsure")
 
-    # Diferença de comportamento entre modelos
+    # Difference in behavior between models
     if len(results) >= 2:
-        print("\n  COMPARAÇÃO DE PADRÕES DE ERRO:")
+        print("\n  ERROR PATTERN COMPARISON:")
         names = list(results.keys())
         for i in range(len(names)):
             for j in range(i + 1, len(names)):
@@ -118,16 +118,16 @@ def analyze_errors(results):
                     fp1_rate = cm1[1][0] / max(1, cm1[1][0] + cm1[1][1])
                     fp2_rate = cm2[1][0] / max(1, cm2[1][0] + cm2[1][1])
                     diff = abs(fp1_rate - fp2_rate)
-                    print(f"  {n1} vs {n2}: diferença de FP rate = {diff:.2%}")
+                    print(f"  {n1} vs {n2}: difference in FP rate = {diff:.2%}")
 
 
 def run(output_dir="outputs"):
-    print("[Etapa 8] Carregando resultados salvos...")
+    print("[Step 8] Loading saved results...")
     results = load_results(output_dir)
 
     print_comparison_table(results)
     print_confusion_matrices(results)
     analyze_errors(results)
 
-    print("\n[Etapa 8] Concluída com sucesso.")
+    print("\n[Step 8] Completed successfully.")
     return results
