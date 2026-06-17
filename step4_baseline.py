@@ -17,13 +17,13 @@ from sklearn.metrics import (
 def load_splits(output_dir):
     train_df = pd.read_csv(os.path.join(output_dir, "train.csv"))
     test_df  = pd.read_csv(os.path.join(output_dir, "test.csv"))
-    print(f"[Etapa 4] Treino: {len(train_df)} | Teste: {len(test_df)}")
+    print(f"[Step 4] Train: {len(train_df)} | Test: {len(test_df)}")
     return train_df, test_df
 
 
 def train_baseline(train_df):
-    """Treina TF-IDF + Regressão Logística no conjunto de treino."""
-    print("[Etapa 4] Treinando TF-IDF + Logistic Regression...")
+    """Train TF-IDF + Logistic Regression on the training set."""
+    print("[Step 4] Training TF-IDF + Logistic Regression...")
 
     vectorizer = TfidfVectorizer(
         ngram_range=(1, 2),
@@ -35,18 +35,18 @@ def train_baseline(train_df):
 
     clf = LogisticRegression(max_iter=1000, C=1.0, random_state=42)
     clf.fit(X_train, y_train)
-    print("  Modelo treinado.")
+    print("  Model trained.")
     return vectorizer, clf
 
 
 def evaluate(vectorizer, clf, test_df):
-    """Avalia o modelo no conjunto de teste e retorna dicionário de métricas."""
+    """Evaluate the model on the test set and return a dictionary of metrics."""
     X_test = vectorizer.transform(test_df["text"].fillna(""))
     y_true = test_df["label"].values
     y_pred = clf.predict(X_test)
 
     cm = confusion_matrix(y_true, y_pred, labels=[1, 0])
-    report = classification_report(y_true, y_pred, target_names=["não irônico", "irônico"])
+    report = classification_report(y_true, y_pred, target_names=["not ironic", "ironic"])
 
     results = {
         "model":     "TF-IDF + Logistic Regression",
@@ -59,15 +59,15 @@ def evaluate(vectorizer, clf, test_df):
         "classification_report": report,
     }
 
-    print("\n[Etapa 4] Resultados do Baseline:")
+    print("\n[Step 4] Baseline results:")
     print(f"  Accuracy  : {results['accuracy']:.4f}")
     print(f"  Macro-F1  : {results['macro_f1']:.4f}")
     print(f"  Precision : {results['precision']:.4f}")
     print(f"  Recall    : {results['recall']:.4f}")
-    print("\n  Matriz de Confusão (linhas=real, colunas=previsto):")
-    print("              Irônico  Não Irônico")
-    print(f"  Irônico    {cm[0][0]:>7}  {cm[0][1]:>11}")
-    print(f"  Não Irônico{cm[1][0]:>7}  {cm[1][1]:>11}")
+    print("\n  Confusion Matrix (rows=actual, cols=predicted):")
+    print("              Ironic  Not Ironic")
+    print(f"  Ironic    {cm[0][0]:>7}  {cm[0][1]:>11}")
+    print(f"  Not Ironic{cm[1][0]:>7}  {cm[1][1]:>11}")
     print(f"\n{report}")
     return results
 
@@ -77,7 +77,7 @@ def save_results(results, output_dir):
     path = os.path.join(output_dir, "baseline_results.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
-    print(f"[Etapa 4] Resultados salvos em: {path}")
+    print(f"[Step 4] Results saved at: {path}")
 
 
 def run(train_df=None, test_df=None, output_dir="outputs"):
@@ -87,5 +87,5 @@ def run(train_df=None, test_df=None, output_dir="outputs"):
     vectorizer, clf = train_baseline(train_df)
     results = evaluate(vectorizer, clf, test_df)
     save_results(results, output_dir)
-    print("\n[Etapa 4] Concluída com sucesso.")
+    print("\n[Step 4] Completed successfully.")
     return results
