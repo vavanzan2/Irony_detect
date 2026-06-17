@@ -28,25 +28,25 @@ class IronyDataset(Dataset):
 
 
 def load_model(model_dir):
-    print(f"[Etapa 7] Carregando modelo de: {model_dir}")
+    print(f"[Step 7] Loading model from: {model_dir}")
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     model = AutoModelForSequenceClassification.from_pretrained(model_dir)
     model.eval()
-    print("  Modelo carregado.")
+    print("  Model loaded.")
     return tokenizer, model
 
 
 def load_test(output_dir):
     path = os.path.join(output_dir, "test.csv")
     df = pd.read_csv(path)
-    print(f"[Etapa 7] Teste: {len(df)} textos")
+    print(f"[Step 7] Test set: {len(df)} texts")
     return df
 
 
 def predict(tokenizer, model, texts, batch_size=32, max_length=128):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
-    print(f"[Etapa 7] Inferência no dispositivo: {device}")
+    print(f"[Step 7] Inference device: {device}")
 
     encodings = tokenizer(
         list(texts),
@@ -72,7 +72,7 @@ def predict(tokenizer, model, texts, batch_size=32, max_length=128):
 
 def evaluate(y_true, y_pred):
     cm = confusion_matrix(y_true, y_pred, labels=[1, 0])
-    report = classification_report(y_true, y_pred, target_names=["não irônico", "irônico"])
+    report = classification_report(y_true, y_pred, target_names=["not ironic", "ironic"])
 
     results = {
         "model":     "RoBERTa fine-tuned (EPIC)",
@@ -85,15 +85,15 @@ def evaluate(y_true, y_pred):
         "classification_report": report,
     }
 
-    print("\n[Etapa 7] Resultados do RoBERTa fine-tuned:")
+    print("\n[Step 7] RoBERTa fine-tuned results:")
     print(f"  Accuracy  : {results['accuracy']:.4f}")
     print(f"  Macro-F1  : {results['macro_f1']:.4f}")
     print(f"  Precision : {results['precision']:.4f}")
     print(f"  Recall    : {results['recall']:.4f}")
-    print("\n  Matriz de Confusão (linhas=real, colunas=previsto):")
-    print("              Irônico  Não Irônico")
-    print(f"  Irônico    {cm[0][0]:>7}  {cm[0][1]:>11}")
-    print(f"  Não Irônico{cm[1][0]:>7}  {cm[1][1]:>11}")
+    print("\n  Confusion Matrix (rows=actual, cols=predicted):")
+    print("              Ironic  Not Ironic")
+    print(f"  Ironic    {cm[0][0]:>7}  {cm[0][1]:>11}")
+    print(f"  Not Ironic{cm[1][0]:>7}  {cm[1][1]:>11}")
     print(f"\n{report}")
     return results
 
@@ -103,14 +103,14 @@ def save_results(results, output_dir):
     path = os.path.join(output_dir, "finetuned_results.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
-    print(f"[Etapa 7] Resultados salvos em: {path}")
+    print(f"[Step 7] Results saved at: {path}")
 
 
 def run(test_df=None, output_dir="outputs"):
     model_dir = os.path.join(output_dir, "roberta_finetuned")
     if not os.path.exists(model_dir):
         raise FileNotFoundError(
-            f"Modelo não encontrado em '{model_dir}'. Execute a etapa 'finetune' primeiro."
+            f"Model not found at '{model_dir}'. Run the 'finetune' step first."
         )
 
     if test_df is None:
@@ -122,5 +122,5 @@ def run(test_df=None, output_dir="outputs"):
 
     results = evaluate(y_true, y_pred)
     save_results(results, output_dir)
-    print("\n[Etapa 7] Concluída com sucesso.")
+    print("\n[Step 7] Completed successfully.")
     return results
