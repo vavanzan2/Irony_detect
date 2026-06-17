@@ -19,12 +19,12 @@ CARDIFF_MODEL = "cardiffnlp/twitter-roberta-base-irony"
 def load_test(output_dir):
     path = os.path.join(output_dir, "test.csv")
     df = pd.read_csv(path)
-    print(f"[Etapa 5] Teste carregado: {len(df)} textos")
+    print(f"[Step 5] Test loaded: {len(df)} texts")
     return df
 
 
 def load_cardiff_pipeline():
-    print(f"[Etapa 5] Baixando modelo Cardiff: {CARDIFF_MODEL}")
+    print(f"[Step 5] Downloading Cardiff model: {CARDIFF_MODEL}")
     pipe = pipeline(
         "text-classification",
         model=CARDIFF_MODEL,
@@ -32,14 +32,14 @@ def load_cardiff_pipeline():
         truncation=True,
         max_length=512,
     )
-    print("  Modelo carregado.")
+    print("  Model loaded.")
     return pipe
 
 
 def detect_irony_label(pipe):
-    """Descobre qual label string o modelo usa para ironia e retorna o mapeamento label→int."""
+    """Discover which label string the model uses for irony and return a label→int mapping."""
     id2label = pipe.model.config.id2label
-    print(f"  id2label do Cardiff: {id2label}")
+    print(f"  Cardiff id2label: {id2label}")
 
     label_map = {}
     for idx, name in id2label.items():
@@ -49,27 +49,27 @@ def detect_irony_label(pipe):
         else:
             label_map[name] = 1
 
-    print(f"  Mapeamento aplicado: {label_map}")
+    print(f"  Applied mapping: {label_map}")
     return label_map
 
 
 def predict_cardiff(pipe, texts, batch_size=32):
     """
-    Roda o Cardiff em modo zero-shot e retorna predições binárias (1=irônico, 0=não irônico).
-    Usa o id2label do modelo para garantir o mapeamento correto.
+    Run Cardiff in zero-shot mode and return binary predictions (1=ironic, 0=not ironic).
+    Uses the model's id2label to ensure the correct mapping.
     """
     label_map = detect_irony_label(pipe)
 
-    print(f"[Etapa 5] Predizendo {len(texts)} textos em batches de {batch_size}...")
+    print(f"[Step 5] Predicting {len(texts)} texts in batches of {batch_size}...")
     outputs = pipe(list(texts), batch_size=batch_size, truncation=True, max_length=512)
 
-    # Diagnóstico: mostra as primeiras 3 predições brutas
-    print(f"  Exemplos de saída bruta do pipeline: {outputs[:3]}")
+    # Diagnostic: show first 3 raw predictions
+    print(f"  Example raw outputs from the pipeline: {outputs[:3]}")
 
     preds = []
     for out in outputs:
         raw_label = out["label"]
-        # Usa o mapeamento detectado; fallback por string se não encontrar
+        # Use detected mapping; fallback by string if not found
         if raw_label in label_map:
             preds.append(label_map[raw_label])
         else:
@@ -84,7 +84,7 @@ def predict_cardiff(pipe, texts, batch_size=32):
 
 def evaluate(y_true, y_pred):
     cm = confusion_matrix(y_true, y_pred, labels=[1, 0])
-    report = classification_report(y_true, y_pred, target_names=["não irônico", "irônico"])
+    report = classification_report(y_true, y_pred, target_names=["not ironic", "ironic"])
 
     results = {
         "model":     "Cardiff (zero-shot)",
@@ -97,15 +97,15 @@ def evaluate(y_true, y_pred):
         "classification_report": report,
     }
 
-    print("\n[Etapa 5] Resultados do Cardiff (zero-shot):")
+    print("\n[Step 5] Cardiff results (zero-shot):")
     print(f"  Accuracy  : {results['accuracy']:.4f}")
     print(f"  Macro-F1  : {results['macro_f1']:.4f}")
     print(f"  Precision : {results['precision']:.4f}")
     print(f"  Recall    : {results['recall']:.4f}")
-    print("\n  Matriz de Confusão (linhas=real, colunas=previsto):")
-    print("              Irônico  Não Irônico")
-    print(f"  Irônico    {cm[0][0]:>7}  {cm[0][1]:>11}")
-    print(f"  Não Irônico{cm[1][0]:>7}  {cm[1][1]:>11}")
+    print("\n  Confusion Matrix (rows=actual, cols=predicted):")
+    print("              Ironic  Not Ironic")
+    print(f"  Ironic    {cm[0][0]:>7}  {cm[0][1]:>11}")
+    print(f"  Not Ironic{cm[1][0]:>7}  {cm[1][1]:>11}")
     print(f"\n{report}")
     return results
 
@@ -115,7 +115,7 @@ def save_results(results, output_dir):
     path = os.path.join(output_dir, "cardiff_results.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
-    print(f"[Etapa 5] Resultados salvos em: {path}")
+    print(f"[Step 5] Results saved at: {path}")
 
 
 def run(test_df=None, output_dir="outputs"):
@@ -128,5 +128,5 @@ def run(test_df=None, output_dir="outputs"):
 
     results = evaluate(y_true, y_pred)
     save_results(results, output_dir)
-    print("\n[Etapa 5] Concluída com sucesso.")
+    print("\n[Step 5] Completed successfully.")
     return results
