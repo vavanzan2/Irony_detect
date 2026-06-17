@@ -3,7 +3,7 @@ import pandas as pd
 
 
 def detect_columns(df):
-    """Detecta os nomes das colunas relevantes no DataFrame bruto."""
+    """Detect the names of relevant columns in the raw DataFrame."""
     cols = df.columns.tolist()
 
     def find_col(candidates):
@@ -29,13 +29,13 @@ def detect_columns(df):
         "post":    post,
         "platform": platform,
     }
-    print(f"  Colunas detectadas: {detected}")
+    print(f"  Detected columns: {detected}")
     return detected
 
 
 def encode_label(value):
-    """Converte o valor de ironia para int (1=irônico, 0=não irônico).
-    Cobre os valores reais do EPIC: 'iro' / 'not'.
+    """Convert an irony label value to int (1=ironic, 0=not ironic).
+    Covers EPIC's actual values: 'iro' / 'not'.
     """
     if isinstance(value, (int, float)):
         return int(bool(value))
@@ -46,10 +46,10 @@ def encode_label(value):
 
 
 def majority_vote(df, cols):
-    """Agrega as anotações por item_id via voto majoritário.
-    Retorna um DataFrame com uma linha por texto.
+    """Aggregate annotations by item_id using majority vote.
+    Returns a DataFrame with one row per text.
     """
-    print("[Etapa 2] Aplicando voto majoritário...")
+    print("[Step 2] Applying majority vote...")
 
     id_col    = cols["item_id"]
     label_col = cols["label"]
@@ -60,16 +60,14 @@ def majority_vote(df, cols):
     df = df.copy()
     df["_label_int"] = df[label_col].apply(encode_label)
 
-    # Contagem de votos por texto (named aggregation — sem multi-index)
     votes = (
-        df.groupby(id_col)["_label_int"]
+        df.groupby(id_col) ["_label_int"]
         .agg(vote_ironic="sum", n_annotators="count")
         .reset_index()
     )
     votes.rename(columns={id_col: "item_id"}, inplace=True)
     votes["label"] = (votes["vote_ironic"] >= votes["n_annotators"] / 2).astype(int)
 
-    # Primeiro valor de texto/plataforma por texto
     first_src = {}
     if reply_col:
         first_src[reply_col] = "text"
@@ -89,9 +87,9 @@ def majority_vote(df, cols):
     else:
         labeled = votes
 
-    print(f"  Textos únicos: {len(labeled)}")
-    print(f"  Distribuição final:\n{labeled['label'].value_counts().to_string()}")
-    print(f"  (1 = irônico, 0 = não irônico)")
+    print(f"  Unique texts: {len(labeled)}")
+    print(f"  Final distribution:\n{labeled['label'].value_counts().to_string()}")
+    print(f"  (1 = ironic, 0 = not ironic)")
     return labeled
 
 
@@ -99,18 +97,18 @@ def save_labeled(df, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     path = os.path.join(output_dir, "epic_labeled.csv")
     df.to_csv(path, index=False)
-    print(f"\n[Etapa 2] Dataset com labels salvo em: {path}")
+    print(f"\n[Step 2] Labeled dataset saved at: {path}")
     return path
 
 
 def run(raw_df=None, output_dir="outputs"):
     if raw_df is None:
         path = os.path.join(output_dir, "epic_raw.csv")
-        print(f"[Etapa 2] Carregando {path}...")
+        print(f"[Step 2] Loading {path}...")
         raw_df = pd.read_csv(path)
 
     cols = detect_columns(raw_df)
     labeled_df = majority_vote(raw_df, cols)
     save_labeled(labeled_df, output_dir)
-    print("\n[Etapa 2] Concluída com sucesso.")
+    print("\n[Step 2] Completed successfully.")
     return labeled_df
