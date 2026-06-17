@@ -84,7 +84,6 @@ python main.py --steps load aggregate split baseline cardiff evaluate compare
 
 | Parameter | Controls | Default |
 |-----------|---------|---------|
-| `--steps` | Which steps to run | `all` |
 | `--epochs` | Number of fine-tuning epochs | `3` |
 | `--lr` | Learning rate — fine-tuning speed | `2e-5` |
 | `--seed` | Random seed for reproducibility | `42` |
