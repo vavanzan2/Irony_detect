@@ -68,14 +68,43 @@ The split is done by text ID because the same text appears in multiple rows in t
 
 ## 7. How to Run
 
+### Prerequisites: Git LFS
+
+The fine-tuned model (`outputs/roberta_finetuned/`) is **stored with [Git LFS](https://git-lfs.com/)** because its weight files are too large for regular Git. Before running the pipeline, you must have Git LFS installed and pull the LFS-tracked files — otherwise the model files will only be present as small pointer placeholders and any step that loads the fine-tuned model (e.g. `evaluate`) will fail.
+
+**1. Install Git LFS** (only needed once per machine):
+
+```bash
+# Debian/Ubuntu
+sudo apt-get install git-lfs
+
+# macOS (Homebrew)
+brew install git-lfs
+
+# Then initialize it for your user
+git lfs install
+```
+
+**2. Pull the LFS files** (run this inside the repository, before running the pipeline):
+
+```bash
+git lfs pull
+```
+
+> Tip: if you cloned the repo before installing Git LFS, run `git lfs install` and then `git lfs pull` to replace the pointer files with the real model weights.
+
 ### Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-#LFS
+### Run the full pipeline (including fine-tuning)
+```bash
+python main.py
 ```
+
 ### Run without re-doing fine-tuning
+This reuses the fine-tuned model pulled via Git LFS, so make sure you ran `git lfs pull` first.
 ```bash
 python main.py --steps load aggregate split baseline cardiff evaluate compare
 ```
@@ -113,7 +142,7 @@ Irony_detect/
     ├── baseline_results.json  
     ├── cardiff_results.json   
     ├── finetuned_results.json 
-    └── roberta_finetuned/     
+    └── roberta_finetuned/     ← stored with Git LFS (run `git lfs pull`)
 ```
 
 ---
