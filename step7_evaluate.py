@@ -43,10 +43,11 @@ def load_test(output_dir):
     return df
 
 
-def predict(tokenizer, model, texts, batch_size=32, max_length=128):
+def predict(tokenizer, model, texts, batch_size=32, max_length=128, threshold=0.5):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     print(f"[Step 7] Inference device: {device}")
+    print(f"[Step 7] Classification threshold: {threshold}")
 
     encodings = tokenizer(
         list(texts),
@@ -64,7 +65,8 @@ def predict(tokenizer, model, texts, batch_size=32, max_length=128):
         for batch in loader:
             batch = {k: v.to(device) for k, v in batch.items()}
             outputs = model(**batch)
-            preds = torch.argmax(outputs.logits, dim=-1).cpu().numpy()
+            probs = torch.softmax(outputs.logits, dim=-1).cpu().numpy()
+            preds = (probs[:, 1] >= threshold).astype(int)
             all_preds.extend(preds.tolist())
 
     return all_preds
@@ -106,7 +108,7 @@ def save_results(results, output_dir):
     print(f"[Step 7] Results saved at: {path}")
 
 
-def run(test_df=None, output_dir="outputs"):
+def run(test_df=None, output_dir="outputs", threshold=0.5):
     model_dir = os.path.join(output_dir, "roberta_finetuned")
     if not os.path.exists(model_dir):
         raise FileNotFoundError(
@@ -117,10 +119,11 @@ def run(test_df=None, output_dir="outputs"):
         test_df = load_test(output_dir)
 
     tokenizer, model = load_model(model_dir)
-    y_pred = predict(tokenizer, model, test_df["text"].fillna(""))
+    y_pred = predict(tokenizer, model, test_df["text"].fillna(""), threshold=threshold)
     y_true = test_df["label"].values
 
     results = evaluate(y_true, y_pred)
+    results["threshold"] = threshold
     save_results(results, output_dir)
     print("\n[Step 7] Completed successfully.")
     return results
