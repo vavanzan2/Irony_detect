@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 
@@ -121,6 +122,39 @@ def analyze_errors(results):
                     print(f"  {n1} vs {n2}: difference in FP rate = {diff:.2%}")
 
 
+def save_csv(results, output_dir):
+    if not results:
+        return
+
+    metrics_path = os.path.join(output_dir, "comparison_metrics.csv")
+    with open(metrics_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["model"] + METRICS)
+        writer.writeheader()
+        for name, res in results.items():
+            row = {"model": name}
+            for m in METRICS:
+                row[m] = res.get(m, "N/A")
+            writer.writerow(row)
+    print(f"[Step 8] Metrics saved at: {metrics_path}")
+
+    cm_path = os.path.join(output_dir, "comparison_confusion_matrices.csv")
+    with open(cm_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["model", "TP", "FN", "FP", "TN"])
+        writer.writeheader()
+        for name, res in results.items():
+            cm = res.get("confusion_matrix")
+            if not cm:
+                continue
+            writer.writerow({
+                "model": name,
+                "TP": cm[0][0],
+                "FN": cm[0][1],
+                "FP": cm[1][0],
+                "TN": cm[1][1],
+            })
+    print(f"[Step 8] Confusion matrices saved at: {cm_path}")
+
+
 def run(output_dir="outputs"):
     print("[Step 8] Loading saved results...")
     results = load_results(output_dir)
@@ -128,6 +162,7 @@ def run(output_dir="outputs"):
     print_comparison_table(results)
     print_confusion_matrices(results)
     analyze_errors(results)
+    save_csv(results, output_dir)
 
     print("\n[Step 8] Completed successfully.")
     return results
