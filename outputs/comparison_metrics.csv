@@ -1,0 +1,4 @@
+model,accuracy,precision,recall,macro_f1
+Baseline (TF-IDF + LR),0.6933,0.5971,0.502,0.4164
+Cardiff (zero-shot),0.6578,0.5927,0.5895,0.5909
+RoBERTa fine-tuned (EPIC),0.7289,0.6864,0.6974,0.6908

@@ -41,6 +41,8 @@ def parse_args():
                         help="Batch size do fine-tuning. (padrão: 16)")
     parser.add_argument("--lr", type=float, default=2e-5,
                         help="Learning rate do fine-tuning. (padrão: 2e-5)")
+    parser.add_argument("--threshold", type=float, default=0.5,
+                        help="Limiar de classificação (prob. de 'irony') do RoBERTa fine-tuned na etapa evaluate. (padrão: 0.5)")
     return parser.parse_args()
 
 
@@ -92,7 +94,7 @@ def main():
         )
 
     if "evaluate" in steps:
-        step7_evaluate.run(test_df=test_df, output_dir=args.output_dir)
+        step7_evaluate.run(test_df=test_df, output_dir=args.output_dir, threshold=args.threshold)
 
     if "compare" in steps:
         step8_compare.run(output_dir=args.output_dir)

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import pandas as pd
 from sklearn.metrics import (
@@ -41,10 +42,16 @@ def detect_irony_label(pipe):
     id2label = pipe.model.config.id2label
     print(f"  Cardiff id2label: {id2label}")
 
+    # Split into tokens so negation markers are matched as whole words
+    # (a plain substring check like "not" in n misses labels such as
+    # "non_irony", since "non" does not contain "not" — that bug made
+    # every label fall into the `else` branch and collapse to class 1).
+    negation_tokens = {"not", "non", "no", "false", "0"}
     label_map = {}
     for idx, name in id2label.items():
         n = name.lower().strip()
-        if "not" in n or n in ("0", "false"):
+        tokens = re.split(r"[^a-z0-9]+", n)
+        if any(tok in negation_tokens for tok in tokens):
             label_map[name] = 0
         else:
             label_map[name] = 1

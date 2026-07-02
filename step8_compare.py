@@ -102,9 +102,9 @@ def analyze_errors(results):
         print(f"    False Negative Rate (misses real irony): {fn_rate:.2%}")
 
         if fp_rate > fn_rate:
-            print("    → Tendency: 'aggressive' model — prefers to predict irony when unsure")
+            print("    -> Tendency: 'aggressive' model — prefers to predict irony when unsure")
         else:
-            print("    → Tendency: 'conservative' model — prefers to predict not irony when unsure")
+            print("    -> Tendency: 'conservative' model — prefers to predict not irony when unsure")
 
     # Difference in behavior between models
     if len(results) >= 2:

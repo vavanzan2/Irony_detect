@@ -1,0 +1,4 @@
+model,TP,FN,FP,TN
+Baseline (TF-IDF + LR),1,137,1,311
+Cardiff (zero-shot),57,81,73,239
+RoBERTa fine-tuned (EPIC),85,53,69,243
