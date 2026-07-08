@@ -1,4 +1,4 @@
-#comentário teste
+#comment
 
 import argparse
 
@@ -14,7 +14,7 @@ import step8_compare
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Pipeline — Detecção de Ironia com EPIC",
+        description="Pipeline — Detection of Irony with EPIC",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -26,23 +26,23 @@ def parse_args():
         ],
         default=["all"],
         help=(
-            "Etapas do pipeline a executar.\n"
-            "Use 'all' para o pipeline completo.\n"
-            "Exemplo: --steps load aggregate split"
+            "Pipeline steps to execute.\n"
+            "Use 'all' for complete pipeline.\n"
+            "Example: --steps load aggregate split"
         ),
     )
     parser.add_argument("--output_dir", type=str, default="outputs",
-                        help="Diretório onde os resultados serão salvos. (padrão: outputs/)")
+                        help="Directory where the results are saved. (default: outputs/)")
     parser.add_argument("--seed", type=int, default=42,
-                        help="Semente aleatória para reprodutibilidade. (padrão: 42)")
+                        help="Random seed for reproducibility. (default: 42)")
     parser.add_argument("--epochs", type=int, default=3,
-                        help="Épocas de fine-tuning do RoBERTa. (padrão: 3)")
+                        help="Number of fine-tuning epochs for RoBERTa. (default: 3)")
     parser.add_argument("--batch_size", type=int, default=16,
-                        help="Batch size do fine-tuning. (padrão: 16)")
+                        help="Batch size used during fine-tuning. (default: 16)")
     parser.add_argument("--lr", type=float, default=2e-5,
-                        help="Learning rate do fine-tuning. (padrão: 2e-5)")
-    parser.add_argument("--threshold", type=float, default=0.5,
-                        help="Limiar de classificação (prob. de 'irony') do RoBERTa fine-tuned na etapa evaluate. (padrão: 0.5)")
+                        help="Learning rate used during fine-tuning. (default: 2e-5)")
+    parser.add_argument("--threshold", type=float, default=0.3,
+                        help="Classification threshold (probability of the 'irony' class) for the fine-tuned RoBERTa model during the evaluation step. (default: 0.3)")
     return parser.parse_args()
 
 
@@ -60,10 +60,10 @@ def main():
     steps = expand_steps(args.steps)
 
     print("=" * 60)
-    print("  Pipeline — Detecção de Ironia com EPIC")
+    print("  Pipeline — Detection of Irony with EPIC")
     print("=" * 60)
-    print(f"  Etapas selecionadas : {steps}")
-    print(f"  Diretório de saída  : {args.output_dir}")
+    print(f"  Selected steps : {steps}")
+    print(f"  Output directory  : {args.output_dir}")
     print(f"  Seed                : {args.seed}")
     print("=" * 60)
 
@@ -100,7 +100,7 @@ def main():
         step8_compare.run(output_dir=args.output_dir)
 
     print("\n" + "=" * 60)
-    print("  Pipeline finalizado.")
+    print("  Pipeline completed successfully.")
     print("=" * 60)
 
 

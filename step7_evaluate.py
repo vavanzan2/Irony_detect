@@ -43,7 +43,7 @@ def load_test(output_dir):
     return df
 
 
-def predict(tokenizer, model, texts, batch_size=32, max_length=128, threshold=0.5):
+def predict(tokenizer, model, texts, batch_size=32, max_length=128, threshold=0.3):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     print(f"[Step 7] Inference device: {device}")
@@ -108,7 +108,7 @@ def save_results(results, output_dir):
     print(f"[Step 7] Results saved at: {path}")
 
 
-def run(test_df=None, output_dir="outputs", threshold=0.5):
+def run(test_df=None, output_dir="outputs", threshold=0.3):
     model_dir = os.path.join(output_dir, "roberta_finetuned")
     if not os.path.exists(model_dir):
         raise FileNotFoundError(

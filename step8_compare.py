@@ -92,7 +92,7 @@ def analyze_errors(results):
         fp = cm[1][0]  # not ironic predicted as ironic  (false positive)
         tn = cm[1][1]  # not ironic predicted as not ironic
 
-        total = tp + fn + fp + tn
+        
         fp_rate = fp / (fp + tn) if (fp + tn) > 0 else 0
         fn_rate = fn / (fn + tp) if (fn + tp) > 0 else 0
 
