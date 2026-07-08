@@ -25,7 +25,6 @@ In this project: a text is considered ironic when the majority of EPIC annotator
 
 ## 4. The Three Models
 
-Fill in the table below with what each model is and how it is used:
 
 | Model | What it is | Do you train it? | Evaluated on test? |
 |-------|-----------|------------------|--------------------|
